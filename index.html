@@ -433,7 +433,27 @@ document.addEventListener('DOMContentLoaded', async function() {
       while (wrapper && getComputedStyle(wrapper).display !== 'flex') wrapper = wrapper.parentElement;
       if (!wrapper || !wrapper.parentElement) return;
       var w = wrapper.parentElement.getBoundingClientRect().width;
-      if (w > 0 && w < 10000) wrapper.style.setProperty('width', Math.round(w) + 'px', 'important');
+      // Photo Portfolio carousel cards: even once the circular-dependency
+      // explosion is fixed, they were still rendering at full column width
+      // (~1438px on desktop) with no real cap -- cards should read smaller
+      // than a phone screen, not fill a desktop column edge to edge.
+      var cap = car.closest('#fotos') ? 340 : 10000;
+      if (w > 0 && w < 10000) wrapper.style.setProperty('width', Math.round(Math.min(w, cap)) + 'px', 'important');
+    });
+  }
+
+  // 1c) "Presentation" photos (hero, reel cover) render inconsistently
+  //    between engines even once sane (WebKit ~1020px vs Chrome ~544px on
+  //    the same desktop width) -- neither has an explicit cap, so each
+  //    engine's own circular-dependency fallback value wins. Force a hard,
+  //    consistent cap (~14cm) regardless of engine.
+  var PRESENTATION_CAP_PX = 530; // ~14cm at 96dpi
+  function fixPresentationPhotoSizes() {
+    ['w-hero', 'w-reel-cover'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      var w = el.getBoundingClientRect().width;
+      if (w > PRESENTATION_CAP_PX) el.style.setProperty('max-width', PRESENTATION_CAP_PX + 'px', 'important');
     });
   }
   // 1b) The same circular aspect-ratio sizing bug can hit ANY aspect-ratio
@@ -475,8 +495,10 @@ document.addEventListener('DOMContentLoaded', async function() {
   var carouselPoll = setInterval(function() {
     fixCarouselSizing();
     fixAbsurdAspectRatioBoxes();
+    fixPresentationPhotoSizes();
     if (++carouselPollCount > 120) clearInterval(carouselPoll); // ~60s then stop
   }, 500);
+  window.addEventListener('resize', fixPresentationPhotoSizes);
 
   // 2) The prev/next carousel buttons carry an unresolved template binding
   //    (sc-camel-on-click="{{ carNav }}") -- never wired to a real handler.

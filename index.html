@@ -542,6 +542,34 @@ document.addEventListener('DOMContentLoaded', async function() {
       row.style.removeProperty('padding-top');
       row.style.removeProperty('padding-bottom');
     }
+
+    // The PT/EN buttons carry a min-height:36px / min-width:52px meant as
+    // a touch-target minimum, but next to the 22px/26px-tall logo
+    // wordmark it reads as oversized -- "same height as the whole bar".
+    // Match it to the logo's own text height on mobile instead of the
+    // generic tap-target size.
+    var logo = Array.from(document.querySelectorAll('a')).find(function(a) { return a.textContent.trim() === 'Marcela C. Rangel'; });
+    var enBtn = Array.from(document.querySelectorAll('button')).find(function(b) { return b.textContent.trim() === 'EN'; });
+    if (window.innerWidth < 600) {
+      var targetH = logo ? Math.round(logo.getBoundingClientRect().height) + 4 : 30; // small margin so text isn't edge-to-edge
+      [ptBtn, enBtn].forEach(function(btn) {
+        if (!btn) return;
+        btn.style.setProperty('min-height', targetH + 'px', 'important');
+        btn.style.setProperty('min-width', '0', 'important');
+        btn.style.setProperty('padding', '0 10px', 'important');
+        btn.style.setProperty('font-size', '10px', 'important');
+      });
+      toggleWrap.style.setProperty('padding', '2px', 'important');
+    } else {
+      [ptBtn, enBtn].forEach(function(btn) {
+        if (!btn) return;
+        btn.style.removeProperty('min-height');
+        btn.style.removeProperty('min-width');
+        btn.style.removeProperty('padding');
+        btn.style.removeProperty('font-size');
+      });
+      toggleWrap.style.removeProperty('padding');
+    }
   }
 
   function fixVideoGridPosters() {

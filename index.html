@@ -432,13 +432,32 @@ document.addEventListener('DOMContentLoaded', async function() {
       var wrapper = car.parentElement;
       while (wrapper && getComputedStyle(wrapper).display !== 'flex') wrapper = wrapper.parentElement;
       if (!wrapper || !wrapper.parentElement) return;
+      var fotosGrid = car.closest('[style*="grid-template-columns"]');
+      if (fotosGrid && car.closest('#fotos')) {
+        // Photo Portfolio: compute the real per-card width directly from
+        // the grid's own math (repeat(N,1fr) + gap) instead of trusting
+        // wrapper.parentElement -- that reading was itself unreliable
+        // (sometimes still contaminated by the same circular bug at the
+        // moment this runs) and produced cards positioned thousands of px
+        // off-screen. Take 12% off the true per-column width and center
+        // the card inside its own column.
+        var gridStyle = fotosGrid.getAttribute('style') || '';
+        var colMatch = gridStyle.match(/grid-template-columns:\s*repeat\((\d+)/);
+        var gapMatch = gridStyle.match(/gap:\s*([\d.]+)px/);
+        var cols = colMatch ? parseInt(colMatch[1], 10) : 4;
+        var gap = gapMatch ? parseFloat(gapMatch[1]) : 32;
+        var gridW = fotosGrid.getBoundingClientRect().width;
+        if (gridW > 0 && gridW < 10000) {
+          var cellW = (gridW - gap * (cols - 1)) / cols;
+          var target = Math.round(cellW * 0.88);
+          wrapper.style.setProperty('width', target + 'px', 'important');
+          wrapper.style.setProperty('margin-left', 'auto', 'important');
+          wrapper.style.setProperty('margin-right', 'auto', 'important');
+        }
+        return;
+      }
       var w = wrapper.parentElement.getBoundingClientRect().width;
-      // Photo Portfolio carousel cards: even once the circular-dependency
-      // explosion is fixed, they were still rendering at full column width
-      // (~1438px on desktop) with no real cap -- cards should read smaller
-      // than a phone screen, not fill a desktop column edge to edge.
-      var cap = car.closest('#fotos') ? 340 : 10000;
-      if (w > 0 && w < 10000) wrapper.style.setProperty('width', Math.round(Math.min(w, cap)) + 'px', 'important');
+      if (w > 0 && w < 10000) wrapper.style.setProperty('width', Math.round(w) + 'px', 'important');
     });
   }
 
@@ -447,7 +466,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   //    the same desktop width) -- neither has an explicit cap, so each
   //    engine's own circular-dependency fallback value wins. Force a hard,
   //    consistent cap (~14cm) regardless of engine.
-  var PRESENTATION_CAP_PX = 530; // ~14cm at 96dpi
+  var PRESENTATION_CAP_PX = 453; // ~12cm at 96dpi -- the "MARCELA RANGEL" caption sits in the same column and follows automatically
   function fixPresentationPhotoSizes() {
     ['w-hero', 'w-reel-cover'].forEach(function(id) {
       var el = document.getElementById(id);
@@ -465,26 +484,57 @@ document.addEventListener('DOMContentLoaded', async function() {
   //    large (no real element on a phone needs >5000px) gets its width
   //    locked to its parent's real width, breaking the same cycle.
   var SANE_MAX = 5000; // no real element on any screen needs to be wider/taller than this
+  var FLEX_SPLIT_RE = /flex:\s*[\d.]+\s+[\d.]+\s+0%/; // e.g. "flex: 1 1 0%" -- an intentional equal-share flex item
   function fixAbsurdAspectRatioBoxes() {
     document.querySelectorAll('[style*="aspect-ratio"]').forEach(function(el) {
       var r = el.getBoundingClientRect();
       if (r.width <= SANE_MAX && r.height <= SANE_MAX) return;
-      // The immediate parent can ALSO already be corrupted (same circular
-      // bug, cascading down) -- walk up until an ancestor reports a sane
-      // width, then cascade that fixed width back down through every
-      // broken level in between, not just the one directly touching el.
+      var parent = el.parentElement;
+      if (!parent) return;
+      var parentCS = getComputedStyle(parent);
+      // Some of these aspect-ratio boxes sit directly inside a 50/50 flex
+      // split (flex-basis:0%, e.g. text|photo about section) and ALSO
+      // carry their own pre-existing hardcoded "width: Npx !important" in
+      // the original export (not something this script added) that fights
+      // the flex sizing -- found live: "width: 1357px !important" baked
+      // into the photo wrapper regardless of viewport. Checking via
+      // getComputedStyle (not the raw style-attribute string) because
+      // WebKit and Chromium serialize/report inline style text
+      // differently, which made a plain regex match work in one engine
+      // and silently fail in the other. Clearing the width lets the
+      // element fall back to normal block behavior (fill the flex item's
+      // real, correctly-computed content box) instead of copying in yet
+      // another guessed pixel number.
+      if (parseFloat(parentCS.flexBasis) === 0 && parentCS.display !== 'none') {
+        // The actual root cause: flex items default to min-width:auto,
+        // which means a flex item can never shrink below its CHILD's
+        // intrinsic content width -- and this child's intrinsic width is
+        // itself huge (aspect-ratio computed from an already-inflated
+        // height, inherited from the same broken chain). flex-basis:0
+        // alone doesn't override that default; min-width must be reset
+        // explicitly. This is why setting width:100%/auto on the child
+        // alone never worked in WebKit: the flex item parent itself was
+        // still being held open by its child's min-content size.
+        parent.style.setProperty('min-width', '0', 'important');
+        parent.style.setProperty('min-height', '0', 'important');
+        el.style.setProperty('width', '100%', 'important');
+        el.style.setProperty('max-width', '100%', 'important');
+        return;
+      }
+      // Otherwise: walk up until an ancestor reports a sane width, cascade
+      // that as width:100% through every broken level in between.
       var chain = [];
       var node = el;
-      var saneWidth = null;
+      var found = false;
       for (var depth = 0; depth < 12 && node; depth++) {
         chain.push(node);
         node = node.parentElement;
         if (!node) break;
         var w = node.getBoundingClientRect().width;
-        if (w > 0 && w <= SANE_MAX) { saneWidth = Math.round(w); break; }
+        if (w > 0 && w <= SANE_MAX) { found = true; break; }
       }
-      if (saneWidth == null) return;
-      chain.forEach(function(n) { n.style.setProperty('width', saneWidth + 'px', 'important'); });
+      if (!found) return;
+      chain.forEach(function(n) { n.style.setProperty('width', '100%', 'important'); n.style.setProperty('max-width', '100%', 'important'); });
     });
   }
   window.addEventListener('resize', function() { fixCarouselSizing(); fixAbsurdAspectRatioBoxes(); });

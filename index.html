@@ -417,6 +417,69 @@ document.addEventListener('DOMContentLoaded', async function() {
     history.pushState(null, '', hash);
     waitForRealTarget(hash, function() { smoothScrollTo(hash); });
   }, true);
+
+  // --- Carousel fixes ---
+  // 1) WebKit has a circular sizing bug with aspect-ratio boxes inside a
+  //    flex-direction:column ancestor with no explicit width: it tries to
+  //    resolve width-from-height and height-from-aspect-ratio at once and
+  //    produces absurd values (observed: ~400,000px wide, ~700,000px tall),
+  //    which makes the whole page jump/shake near it. Break the circular
+  //    dependency by giving the flex column wrapper a real pixel width taken
+  //    from ITS OWN parent (which sizes correctly), then let aspect-ratio
+  //    resolve the carousel's height normally against that fixed width.
+  function fixCarouselSizing() {
+    document.querySelectorAll('[data-carousel]').forEach(function(car) {
+      var wrapper = car.parentElement;
+      while (wrapper && getComputedStyle(wrapper).display !== 'flex') wrapper = wrapper.parentElement;
+      if (!wrapper || !wrapper.parentElement) return;
+      var w = wrapper.parentElement.getBoundingClientRect().width;
+      if (w > 0 && w < 10000) wrapper.style.setProperty('width', Math.round(w) + 'px', 'important');
+    });
+  }
+  window.addEventListener('resize', fixCarouselSizing);
+  // Poll instead of MutationObserver: the bootstrap replaces
+  // document.documentElement wholesale after this script starts, which
+  // orphans any observer already bound to the old document.body.
+  var carouselPollCount = 0;
+  var carouselPoll = setInterval(function() {
+    fixCarouselSizing();
+    if (++carouselPollCount > 60) clearInterval(carouselPoll); // ~30s then stop
+  }, 500);
+
+  // 2) The prev/next carousel buttons carry an unresolved template binding
+  //    (sc-camel-on-click="{{ carNav }}") -- never wired to a real handler.
+  //    Implement real slide navigation.
+  function initCarousels() {
+    document.querySelectorAll('[data-carousel]').forEach(function(car) {
+      if (car.__navReady) return;
+      var track = car.querySelector('[data-track]');
+      if (!track) return;
+      var slides = track.children.length;
+      if (!slides) return;
+      car.__navReady = true;
+      car.__idx = 0;
+      function render() {
+        track.style.transform = 'translateX(-' + (car.__idx * 100) + '%)';
+        var dots = car.querySelectorAll('[data-dot]');
+        dots.forEach(function(d, i) {
+          d.style.background = i === car.__idx ? '#F6F2EB' : 'rgba(246,242,235,0.45)';
+        });
+      }
+      car.querySelectorAll('[data-dir]').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          var dir = parseInt(btn.getAttribute('data-dir'), 10) || 0;
+          car.__idx = (car.__idx + dir + slides) % slides;
+          render();
+        });
+      });
+    });
+  }
+  var navPollCount = 0;
+  var navPoll = setInterval(function() {
+    initCarousels();
+    if (++navPollCount > 60) clearInterval(navPoll);
+  }, 500);
 })();
 </script>
 </body>

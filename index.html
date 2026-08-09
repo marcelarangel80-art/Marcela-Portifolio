@@ -447,6 +447,25 @@ document.addEventListener('DOMContentLoaded', async function() {
         var cols = colMatch ? parseInt(colMatch[1], 10) : 4;
         var gap = gapMatch ? parseFloat(gapMatch[1]) : 32;
         var gridW = fotosGrid.getBoundingClientRect().width;
+        // The original grid is a fixed repeat(4,1fr) with no responsive
+        // breakpoint of its own -- on a phone that squeezes 4 columns into
+        // ~350px, making every card tiny (~59px wide, confirmed live) no
+        // matter how the per-card math is tuned. Below ~600px, force a
+        // real single-column stack (one photo under the other, like the
+        // rest of the page's single-photo sections) instead of trying to
+        // fit 4 across.
+        if (window.innerWidth < 600) {
+          fotosGrid.style.setProperty('grid-template-columns', '1fr', 'important');
+          fotosGrid.style.setProperty('justify-items', 'center', 'important');
+          if (gridW > 0 && gridW < 10000) {
+            var mobileTarget = Math.round(gridW * 0.86);
+            wrapper.style.setProperty('width', mobileTarget + 'px', 'important');
+            wrapper.style.setProperty('margin-left', 'auto', 'important');
+            wrapper.style.setProperty('margin-right', 'auto', 'important');
+            wrapper.style.setProperty('margin-bottom', '32px', 'important');
+          }
+          return;
+        }
         if (gridW > 0 && gridW < 10000) {
           var cellW = (gridW - gap * (cols - 1)) / cols;
           var target = Math.round(cellW * 0.88);

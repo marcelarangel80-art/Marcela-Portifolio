@@ -515,6 +515,35 @@ document.addEventListener('DOMContentLoaded', async function() {
   //    background image on their container, so something meaningful shows
   //    whichever one the viewport picks.
   var VIDEO_POSTERS = { 'w-g1': './uploads/poster-g1.jpg', 'w-g3': './uploads/poster-g3.jpg', 'w-g5': './uploads/poster-g5.jpg', 'w-g7': './uploads/poster-g7.jpg' };
+  // 1a3) The mobile header is 3 flex children (name, PT/EN toggle, nav
+  //    links) that wrap onto their own lines below ~600px (flex-wrap:wrap
+  //    with no per-item override) -- fine in principle, but the row's own
+  //    gap:32px applies as row-gap BETWEEN every wrapped line too, so 3
+  //    stacked lines pay for 2x32px of pure gap on top of the row's own
+  //    padding, on a screen that has the least height to spare. Confirmed
+  //    live: name row + toggle row + nav row = 185px tall total. Tighten
+  //    just the gap/padding on mobile -- doesn't touch the 3-children
+  //    structure or the horizontal-scroll nav links, so the desktop
+  //    single-line layout (where gap separates columns, not stacked rows)
+  //    is untouched.
+  function fixMobileHeaderSpacing() {
+    var ptBtn = Array.from(document.querySelectorAll('button')).find(function(b) { return b.textContent.trim() === 'PT'; });
+    if (!ptBtn) return;
+    var toggleWrap = ptBtn.closest('div'); // the toggle's own small pill wrapper
+    var togglePosition = toggleWrap ? toggleWrap.parentElement : null; // the "outer row" holding just the toggle -- NOT the 3-child header row
+    var row = togglePosition ? togglePosition.parentElement : null; // the actual 3-child flex row (name / nav links / toggle) that wraps and needs its gap tightened
+    if (!row) return;
+    if (window.innerWidth < 600) {
+      row.style.setProperty('row-gap', '6px', 'important');
+      row.style.setProperty('padding-top', '10px', 'important');
+      row.style.setProperty('padding-bottom', '10px', 'important');
+    } else {
+      row.style.removeProperty('row-gap');
+      row.style.removeProperty('padding-top');
+      row.style.removeProperty('padding-bottom');
+    }
+  }
+
   function fixVideoGridPosters() {
     Object.keys(VIDEO_POSTERS).forEach(function(id) {
       var slot = document.getElementById(id);
@@ -600,9 +629,11 @@ document.addEventListener('DOMContentLoaded', async function() {
     fixAbsurdAspectRatioBoxes();
     fixPresentationPhotoSizes();
     fixVideoGridPosters();
+    fixMobileHeaderSpacing();
     if (++carouselPollCount > 120) clearInterval(carouselPoll); // ~60s then stop
   }, 500);
   window.addEventListener('resize', fixPresentationPhotoSizes);
+  window.addEventListener('resize', fixMobileHeaderSpacing);
 
   // 2) The prev/next carousel buttons carry an unresolved template binding
   //    (sc-camel-on-click="{{ carNav }}") -- never wired to a real handler.

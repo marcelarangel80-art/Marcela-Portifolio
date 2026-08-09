@@ -444,14 +444,27 @@ document.addEventListener('DOMContentLoaded', async function() {
   //    net: any element with an inline aspect-ratio that ends up absurdly
   //    large (no real element on a phone needs >5000px) gets its width
   //    locked to its parent's real width, breaking the same cycle.
+  var SANE_MAX = 5000; // no real element on any screen needs to be wider/taller than this
   function fixAbsurdAspectRatioBoxes() {
     document.querySelectorAll('[style*="aspect-ratio"]').forEach(function(el) {
       var r = el.getBoundingClientRect();
-      if (r.width <= 5000 && r.height <= 5000) return;
-      var parent = el.parentElement;
-      if (!parent) return;
-      var pw = parent.getBoundingClientRect().width;
-      if (pw > 0 && pw < 5000) el.style.setProperty('width', Math.round(pw) + 'px', 'important');
+      if (r.width <= SANE_MAX && r.height <= SANE_MAX) return;
+      // The immediate parent can ALSO already be corrupted (same circular
+      // bug, cascading down) -- walk up until an ancestor reports a sane
+      // width, then cascade that fixed width back down through every
+      // broken level in between, not just the one directly touching el.
+      var chain = [];
+      var node = el;
+      var saneWidth = null;
+      for (var depth = 0; depth < 12 && node; depth++) {
+        chain.push(node);
+        node = node.parentElement;
+        if (!node) break;
+        var w = node.getBoundingClientRect().width;
+        if (w > 0 && w <= SANE_MAX) { saneWidth = Math.round(w); break; }
+      }
+      if (saneWidth == null) return;
+      chain.forEach(function(n) { n.style.setProperty('width', saneWidth + 'px', 'important'); });
     });
   }
   window.addEventListener('resize', function() { fixCarouselSizing(); fixAbsurdAspectRatioBoxes(); });

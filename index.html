@@ -473,6 +473,40 @@ document.addEventListener('DOMContentLoaded', async function() {
       if (!el) return;
       var w = el.getBoundingClientRect().width;
       if (w > PRESENTATION_CAP_PX) el.style.setProperty('max-width', PRESENTATION_CAP_PX + 'px', 'important');
+      // The photo's own bordered/outlined box (its direct parent, which
+      // carries the visible outline and its own separate aspect-ratio) is
+      // sized from the grid column share, not from the photo -- capping
+      // only the photo left the box bigger than the photo it frames,
+      // showing as extra empty border. Cap the box to match.
+      var box = el.parentElement;
+      if (box) {
+        var bw = box.getBoundingClientRect().width;
+        if (bw > PRESENTATION_CAP_PX) box.style.setProperty('max-width', PRESENTATION_CAP_PX + 'px', 'important');
+      }
+    });
+  }
+
+  // 1a2) The 4 Video Portfolio grid videos (w-g1/g3/g5/g7) are deliberately
+  //    set to display:none on narrow viewports at load time (bandwidth
+  //    saving, inline in the original export -- not something this script
+  //    controls or should fight). Their image-slot cover was never
+  //    assigned a source in the original design, so hiding the video left
+  //    a bare black box with placeholder text and nothing else. Give each
+  //    a real poster frame (extracted from the actual video file) as a
+  //    background image on their container, so something meaningful shows
+  //    whichever one the viewport picks.
+  var VIDEO_POSTERS = { 'w-g1': './uploads/poster-g1.jpg', 'w-g3': './uploads/poster-g3.jpg', 'w-g5': './uploads/poster-g5.jpg', 'w-g7': './uploads/poster-g7.jpg' };
+  function fixVideoGridPosters() {
+    Object.keys(VIDEO_POSTERS).forEach(function(id) {
+      var slot = document.getElementById(id);
+      if (!slot || slot.__posterSet) return;
+      var container = slot.parentElement;
+      if (!container) return;
+      container.style.setProperty('background-image', 'url(' + VIDEO_POSTERS[id] + ')', 'important');
+      container.style.setProperty('background-size', 'cover', 'important');
+      container.style.setProperty('background-position', 'center', 'important');
+      slot.style.setProperty('color', 'transparent', 'important'); // hide the empty-slot placeholder label now that a real poster shows behind it
+      slot.__posterSet = true;
     });
   }
   // 1b) The same circular aspect-ratio sizing bug can hit ANY aspect-ratio
@@ -546,6 +580,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     fixCarouselSizing();
     fixAbsurdAspectRatioBoxes();
     fixPresentationPhotoSizes();
+    fixVideoGridPosters();
     if (++carouselPollCount > 120) clearInterval(carouselPoll); // ~60s then stop
   }, 500);
   window.addEventListener('resize', fixPresentationPhotoSizes);

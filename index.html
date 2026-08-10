@@ -526,6 +526,37 @@ document.addEventListener('DOMContentLoaded', async function() {
   //    structure or the horizontal-scroll nav links, so the desktop
   //    single-line layout (where gap separates columns, not stacked rows)
   //    is untouched.
+  // 1a4) Swap the hero section's photo/text columns: photo on the left,
+  //    text on the right (originally text-left/photo-right). Scoped to the
+  //    #topo hero grid specifically (grid-template-columns:7fr 5fr) so it
+  //    doesn't touch the visually-similar but structurally different
+  //    #sobre 50/50 flex row.
+  function fixHeroColumnOrder() {
+    var photo = document.getElementById('w-hero');
+    if (!photo) return;
+    var grid = photo.closest('#topo [style*="grid-template-columns: 7fr"], #topo [style*="grid-template-columns:7fr"]');
+    if (!grid) return;
+    var kids = Array.from(grid.children);
+    if (kids.length !== 2) return;
+    var photoCol = kids.find(function(k) { return k.contains(photo); });
+    var textCol = kids.find(function(k) { return !k.contains(photo); });
+    if (!photoCol || !textCol) return;
+    // CSS `order` only works while the container stays display:grid/flex --
+    // below some width this grid switches to a plain stacked layout (an
+    // external responsive rule, not inline style), where `order` has no
+    // effect and items just follow real DOM order again. Confirmed live:
+    // order was correctly applied (order:1 on photo, order:2 on text) but
+    // text still rendered first on a 390px viewport. Moving the actual
+    // DOM node works in both cases, so do that instead of/alongside order.
+    if (photoCol.nextSibling !== textCol && photoCol !== grid.firstElementChild) {
+      grid.insertBefore(photoCol, textCol);
+    } else if (grid.firstElementChild !== photoCol) {
+      grid.insertBefore(photoCol, grid.firstElementChild);
+    }
+    photoCol.style.setProperty('order', '1', 'important');
+    textCol.style.setProperty('order', '2', 'important');
+  }
+
   function fixMobileHeaderSpacing() {
     var ptBtn = Array.from(document.querySelectorAll('button')).find(function(b) { return b.textContent.trim() === 'PT'; });
     if (!ptBtn) return;
@@ -658,6 +689,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     fixPresentationPhotoSizes();
     fixVideoGridPosters();
     fixMobileHeaderSpacing();
+    fixHeroColumnOrder();
     if (++carouselPollCount > 120) clearInterval(carouselPoll); // ~60s then stop
   }, 500);
   window.addEventListener('resize', fixPresentationPhotoSizes);

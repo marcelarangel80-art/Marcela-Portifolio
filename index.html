@@ -485,7 +485,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   //    the same desktop width) -- neither has an explicit cap, so each
   //    engine's own circular-dependency fallback value wins. Force a hard,
   //    consistent cap (~14cm) regardless of engine.
-  var PRESENTATION_CAP_PX = 453; // ~12cm at 96dpi -- the "MARCELA RANGEL" caption sits in the same column and follows automatically
+  var PRESENTATION_CAP_PX = 453; // ~12cm at 96dpi
   function fixPresentationPhotoSizes() {
     ['w-hero', 'w-reel-cover'].forEach(function(id) {
       var el = document.getElementById(id);
@@ -503,6 +503,26 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (bw > PRESENTATION_CAP_PX) box.style.setProperty('max-width', PRESENTATION_CAP_PX + 'px', 'important');
       }
     });
+    // The "Marcela Rangel" / tagline caption beneath the hero photo is NOT
+    // a child of the box capped above -- it's a sibling one level up, and
+    // is centered via text-align within ITS OWN parent (the full hero
+    // grid column), not within the capped photo. So the photo ends up
+    // capped+flush-left in a wide column while the caption centers on
+    // that whole wide column, landing to the right of the actual photo.
+    // Cap+center that shared parent column so the photo and its caption
+    // both resolve to the same box and align. Scoped to the hero photo's
+    // own column (identified by having a `[data-m="sign"]` caption inside
+    // it) so it doesn't touch w-reel-cover, whose photo sits in an
+    // absolutely-positioned phone mockup with no caption sibling.
+    var heroPhoto = document.getElementById('w-hero');
+    var heroBox = heroPhoto && heroPhoto.parentElement;
+    var heroWrap = heroBox && heroBox.parentElement;
+    var heroCol = heroWrap && heroWrap.parentElement;
+    if (heroCol && heroCol.querySelector('[data-m="sign"]')) {
+      heroCol.style.setProperty('max-width', PRESENTATION_CAP_PX + 'px', 'important');
+      heroCol.style.setProperty('margin-left', 'auto', 'important');
+      heroCol.style.setProperty('margin-right', 'auto', 'important');
+    }
   }
 
   // 1a2) The 4 Video Portfolio grid videos (w-g1/g3/g5/g7) are deliberately
@@ -555,6 +575,32 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
     photoCol.style.setProperty('order', '1', 'important');
     textCol.style.setProperty('order', '2', 'important');
+    // The grid's own track shares (7fr 5fr) were written for the original
+    // text-left/photo-right order and don't follow the swap above -- text
+    // (now visually on the right) would be squeezed into the narrow 5fr
+    // track meant for the photo, while the photo (now visually on the
+    // left) would inflate into the wide 7fr track meant for the text.
+    // Swap the track shares too so each column keeps the width it was
+    // actually designed for.
+    grid.style.setProperty('grid-template-columns', '5fr 7fr', 'important');
+  }
+
+  // 1a5) The exported template escalates CSS `zoom` on [data-m="page"] at
+  //    wide viewports (1.06 at >=1320px, up to 1.36 at >=1900px) -- looks
+  //    like a leftover from the design tool's own editing canvas rather
+  //    than intentional art direction. On the real page this scales
+  //    everything (including the centered max-width:1280 content) up
+  //    without scaling the browser viewport to match, so the visible side
+  //    margins shrink the wider the window gets -- the opposite of what
+  //    you'd want on a large desktop screen (at 1920px wide it leaves
+  //    only ~90px of margin instead of the ~320px max-width:1280 implies).
+  //    Neutralize it so the page renders at true 100% scale with
+  //    consistent, correct margins at every desktop width. Can't just set
+  //    this once -- see the DOM-replacement note on the poll loop below.
+  function fixPageZoom() {
+    var pageEl = document.querySelector('[data-m="page"]');
+    if (!pageEl) return;
+    pageEl.style.setProperty('zoom', '1', 'important');
   }
 
   function fixMobileHeaderSpacing() {
@@ -690,6 +736,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     fixVideoGridPosters();
     fixMobileHeaderSpacing();
     fixHeroColumnOrder();
+    fixPageZoom();
     if (++carouselPollCount > 120) clearInterval(carouselPoll); // ~60s then stop
   }, 500);
   window.addEventListener('resize', fixPresentationPhotoSizes);

@@ -344,6 +344,7 @@
 
   @media (max-width:1024px) {
     section { padding-left:24px !important; padding-right:24px !important; }
+    nav { padding-left:24px !important; padding-right:24px !important; }
     nav > div { flex-wrap:wrap !important; }
     [data-m="navlinks"] { order:3 !important; width:100% !important; overflow-x:auto !important; gap:20px !important; font-size:12px !important; padding-top:10px !important; }
     [data-lang-switch] { flex-shrink:0 !important; }
@@ -360,12 +361,14 @@
   }
   @media (max-width:640px) {
     section { padding-top:56px !important; padding-bottom:56px !important; padding-left:18px !important; padding-right:18px !important; }
-    nav > div { flex-wrap:wrap !important; padding:12px 18px !important; }
+    nav { padding:12px 18px !important; }
+    nav > div { flex-wrap:wrap !important; }
     [data-m="navlinks"] { order:3 !important; width:100% !important; overflow-x:visible !important; gap:14px !important; font-size:11px !important; padding-top:10px !important; justify-content:space-between !important; }
     [data-m="navlinks"] a[href="#numeros"], [data-m="navlinks"] a[href="#sobre"] { display:none !important; }
     [data-m="grid2"], [data-m="grid3"] { grid-template-columns:1fr !important; gap:20px !important; }
     [data-m="grid4"] { grid-template-columns:repeat(2,1fr) !important; gap:14px !important; }
     #portfolio [data-m="grid4"] { grid-template-columns:1fr !important; gap:24px !important; }
+    #portfolio [data-m="grid4"] > div > div { max-width:86% !important; }
     h1 { font-size:34px !important; line-height:1.15 !important; }
     h2 { font-size:26px !important; }
     h3 { font-size:20px !important; }
@@ -380,8 +383,8 @@
 
 <div data-m="page" style="min-height:100vh;background:#F6F2EB;font-family:Manrope,sans-serif;color:#5B4A3E">
 
-  <nav ref="{{ navRef }}" style="position:sticky;top:0;width:100%;z-index:50;background:#5B4A3E;color:#F6F2EB;border-bottom:1px solid transparent;transition:border-color .3s,box-shadow .3s">
-    <div style="max-width:1280px;margin:0 auto;padding:16px 64px;box-sizing:border-box;display:flex;justify-content:space-between;align-items:center;gap:32px">
+  <nav ref="{{ navRef }}" style="position:sticky;top:0;width:100%;z-index:50;background:#5B4A3E;color:#F6F2EB;border-bottom:1px solid transparent;transition:border-color .3s,box-shadow .3s;padding:20px 96px;box-sizing:border-box">
+    <div style="max-width:1280px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:32px">
       <a href="#topo" style="font-family:Italiana,serif;font-weight:400;font-size:22px;letter-spacing:0.22em;text-transform:uppercase;white-space:nowrap;flex-shrink:0;color:#F6F2EB;transition:opacity .2s" style-hover="opacity:0.75;color:#F6F2EB">Marcela <span style="color:#B0A498">C. Rangel</span></a>
       <div data-m="navlinks" style="display:flex;gap:24px;font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:0.05em;white-space:nowrap;flex-shrink:1;min-width:0;overflow-x:auto">
         <a href="#video" style="color:rgba(246,242,235,0.85);transition:color .2s" style-hover="color:#F6F2EB">REEL</a>
@@ -400,7 +403,7 @@
     </div>
   </nav>
 
-  <section id="topo" style="padding:104px 64px 80px;background:#5B4A3E;color:#F6F2EB">
+  <section id="topo" style="padding:104px 96px 80px;background:#5B4A3E;color:#F6F2EB">
     <div data-m="hero" style="max-width:1280px;margin:0 auto;display:grid;grid-template-columns:7fr 5fr;gap:48px;align-items:start">
       <div>
         <h1 style="font-family: Sora,sans-serif; font-size: 60px; font-weight: 700; line-height: 1.1; margin: 0 0 24px; text-align: left">Criando conteúdo <span style="color: rgb(176, 164, 152); font-style: italic; font-weight: 300;">premium&nbsp;</span>entre escalas.</h1>
@@ -448,7 +451,7 @@
     </div>
   </section>
 
-  <section id="video" style="background:#5B4A3E;color:#F6F2EB;padding:96px 64px">
+  <section id="video" style="background:#5B4A3E;color:#F6F2EB;padding:96px 96px">
     <div data-m="videogrid" style="max-width:1280px;margin:0 auto;display:grid;grid-template-columns:1fr 380px;gap:80px;align-items:start">
       <div>
         <h2 style="font-family:Sora,sans-serif;font-size:44px;font-weight:700;margin:0 0 20px;line-height:1.15">Como o conteúdo aparece <span style="color:#B0A498;font-style:italic;font-weight:300">no feed</span>.</h2>
@@ -505,7 +508,7 @@
     </div>
   </section>
 
-  <section id="portfolio" style="padding:96px 64px 48px">
+  <section id="portfolio" style="padding:96px 96px 48px">
     <div style="max-width:1280px;margin:0 auto">
       <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:56px">
         <div>
@@ -575,7 +578,7 @@
     </div>
   </section>
 
-  <section id="fotos" style="padding:48px 64px 96px">
+  <section id="fotos" style="padding:48px 96px 96px">
     <div style="max-width:1280px;margin:0 auto">
       <div style="margin-bottom:56px">
         <h2 style="font-family:Sora,sans-serif;font-size:36px;font-weight:700;margin:0 0 12px">Portfólio em Foto</h2>
@@ -654,7 +657,7 @@
     </div>
   </section>
 
-  <section id="servicos" style="background:#E8DED4;padding:96px 64px">
+  <section id="servicos" style="background:#E8DED4;padding:96px 96px">
     <div style="max-width:1280px;margin:0 auto">
       <h2 style="font-family:Sora,sans-serif;font-size:36px;font-weight:700;margin:0 0 64px;text-align:center">Entregáveis Premium</h2>
       <div data-m="grid3" style="display:grid;grid-template-columns:repeat(3,1fr);gap:32px;margin-bottom:32px">
@@ -702,7 +705,7 @@
     </div>
   </section>
 
-  <section id="numeros" style="background:#70655E;color:#F6F2EB;padding:96px 64px">
+  <section id="numeros" style="background:#70655E;color:#F6F2EB;padding:96px 96px">
     <div style="max-width:1180px;margin:0 auto">
       <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.3em;color:#E8DED4">Público &amp; números</span>
       <h2 style="font-family:Sora,sans-serif;font-size:44px;font-weight:700;margin:16px 0 20px;line-height:1.15;max-width:760px">Acesso, não alcance.</h2>
@@ -726,7 +729,7 @@
 
   
 
-  <section id="sobre" style="padding:96px 64px">
+  <section id="sobre" style="padding:96px 96px">
     <div data-m="rowcol" style="max-width:1280px;margin:0 auto;display:flex;gap:64px;align-items:center">
       <div style="flex:1">
         <h2 style="font-family: Sora,sans-serif; font-size: 36px; font-weight: 700; margin: 0 0 32px; font-style: italic; color: #8A8077; text-transform: uppercase; letter-spacing: -0.05em; text-decoration-line: none">Quem eu sou</h2>
@@ -754,7 +757,7 @@
     </div>
   </section>
 
-  <section id="contato" style="background:#70655E;color:#F6F2EB;padding:96px 64px;border-radius:48px 48px 0 0">
+  <section id="contato" style="background:#70655E;color:#F6F2EB;padding:96px 96px;border-radius:48px 48px 0 0">
     <div style="max-width:896px;margin:0 auto;text-align:center">
       <h2 style="font-family:Sora,sans-serif;font-size:48px;font-weight:700;margin:0 0 32px">Vamos criar algo <span style="color:#E8DED4;font-style:italic;font-weight:300">icônico</span>?</h2>
       <p style="font-size:20px;margin:0 0 48px;opacity:0.9">Atualmente aceitando parcerias para o próximo trimestre. Garanta sua data.</p>
@@ -1363,14 +1366,15 @@ class Component extends DCLogic {
     var togglePosition = toggleWrap ? toggleWrap.parentElement : null;
     var row = togglePosition ? togglePosition.parentElement : null; // the 3-child header row (name / nav links / toggle)
     if (!row) return;
+    // Vertical padding for the whole bar now lives on <nav> itself (with
+    // its own responsive !important overrides at the same breakpoints as
+    // every section), matching how every other section handles its side
+    // margins -- so this function only needs row-gap for when the row
+    // wraps onto multiple lines, not padding.
     if (window.innerWidth < 600) {
       row.style.setProperty('row-gap', '6px', 'important');
-      row.style.setProperty('padding-top', '10px', 'important');
-      row.style.setProperty('padding-bottom', '10px', 'important');
     } else {
       row.style.removeProperty('row-gap');
-      row.style.removeProperty('padding-top');
-      row.style.removeProperty('padding-bottom');
     }
     // The PT/EN buttons carry a min-height:36px/min-width:52px touch-target
     // minimum, but next to the 22-26px logo wordmark it reads as oversized

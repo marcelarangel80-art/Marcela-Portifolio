@@ -316,7 +316,7 @@
   @keyframes marquee { from { transform:translateX(0); } to { transform:translateX(-50%); } }
 
   html, body { scroll-behavior:smooth; scroll-padding-top:64px; }
-  html, body { max-width:100%; overflow-x:hidden; }
+  html, body { max-width:100%; overflow-x:clip; }
   @media (prefers-reduced-motion: reduce) { html, body { scroll-behavior:auto; } }
 
   @media (max-width:1024px) {

@@ -317,6 +317,13 @@
 
   html, body { scroll-behavior:smooth; scroll-padding-top:64px; }
   html, body { max-width:100%; overflow-x:clip; }
+  html { scrollbar-width:thin; scrollbar-color:#B0A498 transparent; }
+  ::-webkit-scrollbar { width:8px; height:8px; }
+  ::-webkit-scrollbar-track { background:transparent; }
+  ::-webkit-scrollbar-thumb { background-color:#B0A498; border-radius:999px; border:2px solid transparent; background-clip:padding-box; }
+  ::-webkit-scrollbar-thumb:hover { background-color:#8A8077; }
+  ::-webkit-scrollbar-button { display:none; width:0; height:0; }
+  ::-webkit-scrollbar-corner { background:transparent; }
   @media (prefers-reduced-motion: reduce) { html, body { scroll-behavior:auto; } }
 
   @media (max-width:1024px) {

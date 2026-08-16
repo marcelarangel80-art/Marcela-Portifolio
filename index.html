@@ -396,8 +396,8 @@
         </div>
         
         </div>
-        <p data-m="sign" style="font-family: Italiana, serif; font-size: 34px; line-height: 1.1; letter-spacing: 0.24em; text-transform: uppercase; color: rgb(246, 242, 235); margin: 24px 0px 0px; text-align: center; white-space: nowrap;">Marcela Rangel</p>
-        <p style="font-family: Manrope, sans-serif; font-size: 14px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(246, 242, 235, 0.7); margin: 12px 0px 0px; text-align: center; white-space: nowrap;">Lifestyle · Wellness · Skincare · Travel</p>
+        <p data-m="sign" style="font-family: Italiana, serif; font-size: 32px; line-height: 1.1; letter-spacing: 0.24em; text-transform: uppercase; color: rgb(246, 242, 235); margin: 24px 0px 0px; text-align: center; white-space: nowrap;">Marcela C. Rangel</p>
+        <p style="font-family: Manrope, sans-serif; font-size: 15px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(246, 242, 235, 0.7); margin: 12px 0px 0px; text-align: center; white-space: nowrap;">Lifestyle · Wellness · Skincare · Travel</p>
       </div><div style="order: 2 !important;">
         <h1 style="font-family: Sora, sans-serif; font-size: 60px; font-weight: 700; line-height: 1.1; margin: 0px 0px 24px; text-align: left;">Criando conteúdo <span style="color: rgb(176, 164, 152); font-style: italic; font-weight: 300;">premium&nbsp;</span>entre escalas.</h1>
         <div style="font-size: 20px; color: rgba(246, 242, 235, 0.82); max-width: 576px; margin: 0px 0px 32px; line-height: 1.65; text-wrap: pretty;"><p class="isSelectedEnd">Comissária de bordo e criadora de UGC, levando marcas para uma vida que nunca fica parada no mesmo lugar.</p><p class="isSelectedEnd">De rotinas de skincare entre voos a rituais de bem-estar, hospedagens e destinos pelo mundo — crio conteúdo natural e elevado, que parece vida real, porque é.</p><p class="isSelectedEnd"><span style="text-wrap-mode: initial;">Conteúdo criado entre escalas, acima das nuvens e onde quer que a próxima viagem me leve.</span></p></div>
@@ -438,7 +438,7 @@
   <section id="video" style="background: rgb(91, 74, 62); color: rgb(246, 242, 235); padding: 96px;">
     <div data-m="videogrid" style="max-width: 1280px; margin: 0px auto; display: grid; grid-template-columns: 1fr 380px; gap: 80px; align-items: start;">
       <div style="">
-        <h2 style="font-family: Sora, sans-serif; font-size: 44px; font-weight: 700; margin: 0px 0px 20px; line-height: 1.15;">Como o conteúdo aparece <span style="color: rgb(176, 164, 152); font-style: italic; font-weight: 300;">no feed</span>.</h2>
+        <h2 style="font-family: Sora, sans-serif; font-size: 44px; font-weight: 700; margin: 0px 0px 20px; line-height: 1.15;">Como o conteúdo aparece<br><span style="color: rgb(176, 164, 152); font-style: italic; font-weight: 300;">no feed</span>.</h2>
         <div style="font-size: 18px; line-height: 1.7; color: rgba(246, 242, 235, 0.75); max-width: 520px; margin: 0px 0px 32px; text-wrap: pretty;"><p class="isSelectedEnd">Seu produto não entra no feed como um anúncio tradicional. Ele aparece como conteúdo nativo, natural e pensado para prender a atenção desde o primeiro segundo — com estética UGC, narrativa visual e foco real no produto.</p><p>Cada Reel é entregue <strong>pronto para publicação</strong>, no formato vertical 9:16, com cortes, textos e legendas integrados à experiência. O primeiro frame é planejado para interromper o scroll, enquanto o restante do vídeo conduz a pessoa pela experiência do produto de forma espontânea e envolvente.</p></div>
         <div style="display: flex; gap: 40px;">
           <div>
@@ -924,6 +924,23 @@
     video.muted = true;
     video.loop = true;
     video.controls = true;
+    // Native <video controls> paint as a browser-chrome overlay with
+    // square corners that ignore the video's own border-radius (confirmed
+    // in both Chromium and WebKit -- the ::-webkit-media-controls-*
+    // pseudo-elements only get the curve at the top, never the bottom
+    // where the controls bar itself sits). Shrink the video a bit off the
+    // bottom so that bar lands entirely within the frame's straight lower
+    // wall instead of crossing into the rounded corner -- the "screen"
+    // parent's own dark background (#1a1512) shows through the gap,
+    // reading as an intentional thin margin, not a mistake.
+    var screen = video.parentElement;
+    if (screen) {
+      var screenH = screen.getBoundingClientRect().height;
+      if (screenH > 0) {
+        video.style.setProperty('height', (screenH - 34) + 'px', 'important');
+        video.style.setProperty('bottom', 'auto', 'important');
+      }
+    }
     var wrap = video.closest('[data-m="grid4"] > div > div') || video.parentElement;
     var btn = wrap && wrap.querySelector('button[aria-label="Reproduzir vídeo"]');
     if (btn && btn.parentElement) btn.parentElement.style.display = 'none';
